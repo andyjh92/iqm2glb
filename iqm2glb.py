@@ -93,9 +93,7 @@ class Glb:
 
 def get_material_name(name_raw):
     split = name_raw.split(";")
-    if len(split) > 1:
-        return split[1] + ".png"
-    return split[0] + ".png"
+    return split[-1] + ".png"
 
 def iqm2glb(iqm, options={}):
     """
