@@ -91,6 +91,12 @@ class Glb:
         w.write(b'\0' * buffer_padding)
 
 
+def get_material_name(name_raw):
+    split = name_raw.split(";")
+    if len(split) > 1:
+        return split[1] + ".png"
+    return split[0] + ".png"
+
 def iqm2glb(iqm, options={}):
     """
     Convert `iqm`, a bytes-like object containing an IQM file, to `Glb`.
@@ -143,7 +149,7 @@ def iqm2glb(iqm, options={}):
         vertex_arrays = {}  # maps vertexarray types to accessor idxs
         for i in range(0, num_vertexarrays):
             vertex_array_type, flags, vertex_array_format, size, offset = \
-                IQM_VERTEXARRAY.unpack_from(iqm, offset=ofs_vertexarrays + i*IQM_VERTEXARRAY.size)
+                IQM_VERTEXARRAY.unpack_from(iqm, offset=ofs_vertexarrays + i * IQM_VERTEXARRAY.size)
             if vertex_array_type in vertex_arrays:
                 raise Exception(f'multiple vertex arrays of type {vertex_array_type}')
             if vertex_array_format == IQM_INT:
@@ -299,7 +305,7 @@ def iqm2glb(iqm, options={}):
 
             primitive = {}
             if material:
-                material_name = get_string(material)
+                material_name = get_material_name(get_string(material)) # TODO add handling of material attributes like doublesided
                 if material_name not in material_names:
                     material_names.append(material_name)
                     primitive['material'] = len(material_names) - 1
@@ -636,7 +642,7 @@ def iqm2glb(iqm, options={}):
             if ofs_bounds and options['include_bounds']:
                 bbmins, bbmaxes, xyradii, radii = [], [], [], []
                 for frame_idx in range(first_frame, first_frame + num_frames):
-                    bounds = IQM_BOUNDS.unpack_from(iqm, offset=ofs_bounds + frame_idx*IQM_BOUNDS.size)
+                    bounds = IQM_BOUNDS.unpack_from(iqm, offset=ofs_bounds + frame_idx * IQM_BOUNDS.size)
                     bbmins.append(bounds[0:3])
                     bbmaxes.append(bounds[3:6])
                     xyradii.append([bounds[6]])
