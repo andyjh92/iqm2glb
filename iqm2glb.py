@@ -393,9 +393,7 @@ def iqm2glb(iqm, options={}):
         gltf['nodes'] = nodes
 
         # Create skin
-        needs_skin = \
-            IQM_BLENDINDEXES in vertex_arrays and \
-            IQM_BLENDWEIGHTS in vertex_arrays
+        needs_skin = num_joints or IQM_BLENDINDEXES in vertex_arrays and IQM_BLENDWEIGHTS in vertex_arrays
         if needs_skin:
             skin = {'joints': list(range(0, num_joints))}
             if len(roots) == 1:
@@ -445,11 +443,18 @@ def iqm2glb(iqm, options={}):
 
     # Scene
     if num_meshes or num_joints:
-        gltf['scenes'] = [{
-            'nodes':
-                roots +
-                [len(gltf['nodes']) - 1 - i for i, __mesh in enumerate(gltf['meshes'])],
-        }]
+        if gltf.get('meshes') is None:
+            gltf['scenes'] = [{
+                'nodes':
+                    roots +
+                    [len(gltf['nodes']) - 1],
+            }]
+        else:
+            gltf['scenes'] = [{
+                'nodes':
+                    roots +
+                    [len(gltf['nodes']) - 1 - i for i, __mesh in enumerate(gltf['meshes'])],
+            }]
         if options['model_name']:
             gltf['scenes'][0]['name'] = options['model_name']
         gltf['scene'] = 0
@@ -573,6 +578,7 @@ def iqm2glb(iqm, options={}):
                     f'(index: {anim_idx}, name: {get_string(name)})'
                 )
                 continue
+            framerate = max(1, framerate)
             loop = flags & IQM_LOOP
 
             anim = {}
